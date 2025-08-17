@@ -12,6 +12,8 @@ type Config struct {
 	 DBPassword string
 	 DBName string
 	 DBSSLMode string
+	 GRPCPort string
+	 HTTPPort string
 }
 
 func LoadConfig() *Config{
@@ -24,6 +26,8 @@ func LoadConfig() *Config{
 		DBPassword: getEnv("DB_PASSWORD", "postgres"),
 		DBName:     getEnv("DB_NAME", "users_db"),
 		DBSSLMode:  getEnv("DB_SSLMODE", "disable"),
+		GRPCPort:   getEnv("GRPC_PORT", "500051"),
+		HTTPPort:   getEnv("HTTP_PORT", "8080"),
 	}
 }
 

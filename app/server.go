@@ -2,24 +2,49 @@ package app
 
 import (
 	"context"
+	"go-users/internal/config"
+	"go-users/internal/user/domain"
+	"go-users/internal/user/transport"
+	"log"
+	"net"
+
 	"github.com/gin-gonic/gin"
 	"go.uber.org/fx"
-	"log"
+	"google.golang.org/grpc"
+
+	userpb "github.com/merdernoty/anime-proto/user"
 )
 
 type Server struct {
 	engine *gin.Engine
+	grpc   *grpc.Server
 }
 
-func NewServer(lc fx.Lifecycle) *Server {
+func NewServer(lc fx.Lifecycle, us domain.UserService) *Server {
 	engine := gin.Default()
-	s := &Server{engine: engine}
+
+	grpcServer := grpc.NewServer()
+	userpb.RegisterUserServiceServer(grpcServer, transport.NewUserGRPCServer(us))
+
+	s := &Server{engine: engine, grpc: grpcServer}
 
 	lc.Append(fx.Hook{
 		OnStart: func(ctx context.Context) error {
 			go func() {
-				log.Println("Start server on :8080")
-				if err := engine.Run(":8080");err != nil {
+				log.Println("Start REST server on :", config.LoadConfig().HTTPPort)
+				if err := engine.Run(":" + config.LoadConfig().HTTPPort); err != nil {
+					log.Fatal(err)
+				}
+
+			}()
+
+			go func() {
+				lis, err := net.Listen("tcp", ":" + config.LoadConfig().GRPCPort)
+				if err != nil {
+					log.Fatal(err)
+				}
+				log.Println("Start gRPC server on :", config.LoadConfig().GRPCPort)
+				if err := grpcServer.Serve(lis); err != nil {
 					log.Fatal(err)
 				}
 
@@ -28,6 +53,7 @@ func NewServer(lc fx.Lifecycle) *Server {
 		},
 		OnStop: func(ctx context.Context) error {
 			log.Println("Stopping server...")
+			s.grpc.GracefulStop()
 			return nil
 		},
 	})
@@ -35,6 +61,6 @@ func NewServer(lc fx.Lifecycle) *Server {
 	return s
 }
 
-func (s *Server)Gin() *gin.Engine{
+func (s *Server) Gin() *gin.Engine {
 	return s.engine
 }
