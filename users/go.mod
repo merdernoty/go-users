@@ -13,7 +13,7 @@ require (
 	gorm.io/gorm v1.30.1
 )
 
-replace github.com/merdernoty/anime-proto => ../../GitHub/amine-proto
+// replace github.com/merdernoty/anime-proto => ../../GitHub/amine-proto
 
 require (
 	github.com/bytedance/sonic v1.11.6 // indirect

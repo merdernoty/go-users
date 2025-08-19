@@ -13,7 +13,7 @@ require (
 	google.golang.org/protobuf v1.36.7
 )
 
-replace github.com/merdernoty/anime-proto => ../../GitHub/amine-proto
+// replace github.com/merdernoty/anime-proto => ../../GitHub/amine-proto
 
 require (
 	github.com/bytedance/sonic v1.14.0 // indirect
