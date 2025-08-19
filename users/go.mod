@@ -5,7 +5,7 @@ go 1.24.1
 require (
 	github.com/gin-gonic/gin v1.10.1
 	github.com/joho/godotenv v1.5.1
-	github.com/merdernoty/anime-proto v0.0.0-20250818173754-a7fa72f05cc1
+	github.com/merdernoty/anime-proto v0.0.0-20250819172550-e4aa9246f925
 	go.uber.org/fx v1.24.0
 	google.golang.org/grpc v1.74.2
 	google.golang.org/protobuf v1.36.7

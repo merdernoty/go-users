@@ -6,7 +6,7 @@ require (
 	github.com/gin-gonic/gin v1.10.1
 	github.com/golang-jwt/jwt/v5 v5.3.0
 	github.com/joho/godotenv v1.5.1
-	github.com/merdernoty/anime-proto v0.0.0-20250818184850-8dae2b35c985
+	github.com/merdernoty/anime-proto v0.0.0-20250819172550-e4aa9246f925
 	go.uber.org/fx v1.24.0
 	golang.org/x/crypto v0.41.0
 	google.golang.org/grpc v1.74.2
