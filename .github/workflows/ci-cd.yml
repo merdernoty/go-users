@@ -132,32 +132,25 @@ jobs:
         uses: hashicorp/vault-action@v3
         with:
           url: ${{ secrets.VAULT_ADDR }}
-          namespace: ${{ secrets.VAULT_NAMESPACE }}
           token: ${{ env.VAULT_TOKEN }}
           secrets: |
-            kv/microservices-planner/users DB_HOST | USERS_DB_HOST ;
-            kv/microservices-planner/users DB_PORT | USERS_DB_PORT ;
-            kv/microservices-planner/users DB_USER | USERS_DB_USER ;
-            kv/microservices-planner/users DB_PASSWORD | USERS_DB_PASSWORD ;
-            kv/microservices-planner/users DB_NAME | USERS_DB_NAME ;
-            kv/microservices-planner/users DB_SSLMODE | USERS_DB_SSLMODE ;
-            kv/microservices-planner/users HTTP_PORT | USERS_HTTP_PORT ;
-            kv/microservices-planner/users GRPC_PORT | USERS_GRPC_PORT
+            kv/data/microservices-planner/users DB_HOST | USERS_DB_HOST ;
+            kv/data/microservices-planner/users DB_PORT | USERS_DB_PORT ;
+            kv/data/microservices-planner/users DB_USER | USERS_DB_USER ;
+            kv/data/microservices-planner/users DB_PASSWORD | USERS_DB_PASSWORD ;
+            kv/data/microservices-planner/users DB_NAME | USERS_DB_NAME ;
+            kv/data/microservices-planner/users DB_SSLMODE | USERS_DB_SSLMODE ;
+            kv/data/microservices-planner/users HTTP_PORT | USERS_HTTP_PORT ;
+            kv/data/microservices-planner/users GRPC_PORT | USERS_GRPC_PORT
+
 
       - name: Read auth secrets
         id: auth_kv
         uses: hashicorp/vault-action@v3
         with:
           url: ${{ secrets.VAULT_ADDR }}
-          namespace: ${{ secrets.VAULT_NAMESPACE }}
           token: ${{ env.VAULT_TOKEN }}
           secrets: |
-            kv/microservices-planner/auth DB_HOST | AUTH_DB_HOST ;
-            kv/microservices-planner/auth DB_PORT | AUTH_DB_PORT ;
-            kv/microservices-planner/auth DB_USER | AUTH_DB_USER ;
-            kv/microservices-planner/auth DB_PASSWORD | AUTH_DB_PASSWORD ;
-            kv/microservices-planner/auth DB_NAME | AUTH_DB_NAME ;
-            kv/microservices-planner/auth DB_SSLMODE | AUTH_DB_SSLMODE ;
             kv/microservices-planner/auth HTTP_PORT | AUTH_HTTP_PORT ;
             kv/microservices-planner/auth GRPC_PORT | AUTH_GRPC_PORT
 
@@ -166,16 +159,8 @@ jobs:
         uses: hashicorp/vault-action@v3
         with:
           url: ${{ secrets.VAULT_ADDR }}
-          namespace: ${{ secrets.VAULT_NAMESPACE }}
           token: ${{ env.VAULT_TOKEN }}
           secrets: |
-            kv/microservices-planner/anime-search DB_HOST | ANIME_DB_HOST ;
-            kv/microservices-planner/anime-search DB_PORT | ANIME_DB_PORT ;
-            kv/microservices-planner/anime-search DB_USER | ANIME_DB_USER ;
-            kv/microservices-planner/anime-search DB_PASSWORD | ANIME_DB_PASSWORD ;
-            kv/microservices-planner/anime-search DB_NAME | ANIME_DB_NAME ;
-            kv/microservices-planner/anime-search DB_SSLMODE | ANIME_DB_SSLMODE ;
-            kv/microservices-planner/anime-search HTTP_PORT | ANIME_HTTP_PORT ;
             kv/microservices-planner/anime-search GRPC_PORT | ANIME_GRPC_PORT ;
             kv/microservices-planner/anime-search API_KEY | ANIME_API_KEY
 
