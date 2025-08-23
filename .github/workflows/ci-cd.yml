@@ -124,7 +124,6 @@ jobs:
         method: jwt
         url: ${{ secrets.VAULT_ADDR }}
         role: ${{ secrets.VAULT_ROLE }}
-        audience: "https://github.com/${{ github.repository_owner }}"
         exportToken: true
 
     - name: Read users secrets
@@ -194,7 +193,7 @@ jobs:
         username: ${{ secrets.VPS_USER }}
         key: ${{ secrets.VPS_SSH_KEY }}
         port: ${{ secrets.VPS_PORT }}
-        envs: GHCR_USER,GHCR_PAT
+        envs: GHCR_USER,GHCR_PAT,VPS_DIR,OWNER
         script_stop: true
         script: |
           set -euo pipefail
@@ -202,6 +201,7 @@ jobs:
             echo "VPS_DIR is empty. Set secret VPS_ROOT_DIR, e.g. /opt/microservices-planner" >&2
             exit 1
           fi
+          export OWNER="${OWNER:-${{ github.repository_owner }}}"
           mkdir -p "$VPS_DIR/env"
           cd "$VPS_DIR"
 
