@@ -107,128 +107,144 @@ jobs:
           docker push "$DEST"
 
   deploy:
-    name: Deploy to VPS (Vault)
-    needs: [ tag-latest ]
-    if: github.ref == 'refs/heads/main'
-    runs-on: ubuntu-latest
-    env:
-      VPS_DIR: ${{ secrets.VPS_ROOT_DIR }}
-      GHCR_USER: ${{ secrets.GHCR_USER }}
-      GHCR_PAT: ${{ secrets.GHCR_PAT }}
-    steps:
-      - uses: actions/checkout@v4
+   name: Deploy to VPS (Vault)
+   needs: [ tag-latest ]
+   if: github.ref == 'refs/heads/main'
+   runs-on: ubuntu-latest
+   env:
+    VPS_DIR: ${{ secrets.VPS_ROOT_DIR }}
+    GHCR_USER: ${{ secrets.GHCR_USER }}
+    GHCR_PAT: ${{ secrets.GHCR_PAT }}
+   steps:
+    - uses: actions/checkout@v4
 
-      - name: Auth to Vault via OIDC
-        uses: hashicorp/vault-action@v3
-        with:
-          method: jwt
-          url: ${{ secrets.VAULT_ADDR }}
-          role: ${{ secrets.VAULT_ROLE }}
-          namespace: ${{ secrets.VAULT_NAMESPACE }}
-          exportToken: true
+    - name: Auth to Vault via OIDC
+      uses: hashicorp/vault-action@v3
+      with:
+        method: jwt
+        url: ${{ secrets.VAULT_ADDR }}
+        role: ${{ secrets.VAULT_ROLE }}
+        audience: "https://github.com/${{ github.repository_owner }}"
+        exportToken: true
 
-      - name: Read users secrets
-        id: users_kv
-        uses: hashicorp/vault-action@v3
-        with:
-          url: ${{ secrets.VAULT_ADDR }}
-          token: ${{ env.VAULT_TOKEN }}
-          secrets: |
-            kv/data/microservices-planner/users DB_HOST | USERS_DB_HOST ;
-            kv/data/microservices-planner/users DB_PORT | USERS_DB_PORT ;
-            kv/data/microservices-planner/users DB_USER | USERS_DB_USER ;
-            kv/data/microservices-planner/users DB_PASSWORD | USERS_DB_PASSWORD ;
-            kv/data/microservices-planner/users DB_NAME | USERS_DB_NAME ;
-            kv/data/microservices-planner/users DB_SSLMODE | USERS_DB_SSLMODE ;
-            kv/data/microservices-planner/users HTTP_PORT | USERS_HTTP_PORT ;
-            kv/data/microservices-planner/users GRPC_PORT | USERS_GRPC_PORT
+    - name: Read users secrets
+      id: users_kv
+      uses: hashicorp/vault-action@v3
+      with:
+        url: ${{ secrets.VAULT_ADDR }}
+        token: ${{ env.VAULT_TOKEN }}
+        secrets: |
+          kv/data/microservices-planner/users DB_HOST | USERS_DB_HOST ;
+          kv/data/microservices-planner/users DB_PORT | USERS_DB_PORT ;
+          kv/data/microservices-planner/users DB_USER | USERS_DB_USER ;
+          kv/data/microservices-planner/users DB_PASSWORD | USERS_DB_PASSWORD ;
+          kv/data/microservices-planner/users DB_NAME | USERS_DB_NAME ;
+          kv/data/microservices-planner/users DB_SSLMODE | USERS_DB_SSLMODE ;
+          kv/data/microservices-planner/users HTTP_PORT | USERS_HTTP_PORT ;
+          kv/data/microservices-planner/users GRPC_PORT | USERS_GRPC_PORT
 
+    - name: Read auth secrets
+      id: auth_kv
+      uses: hashicorp/vault-action@v3
+      with:
+        url: ${{ secrets.VAULT_ADDR }}
+        token: ${{ env.VAULT_TOKEN }}
+        secrets: |
+          kv/data/microservices-planner/auth DB_HOST | AUTH_DB_HOST ;
+          kv/data/microservices-planner/auth DB_PORT | AUTH_DB_PORT ;
+          kv/data/microservices-planner/auth DB_USER | AUTH_DB_USER ;
+          kv/data/microservices-planner/auth DB_PASSWORD | AUTH_DB_PASSWORD ;
+          kv/data/microservices-planner/auth DB_NAME | AUTH_DB_NAME ;
+          kv/data/microservices-planner/auth DB_SSLMODE | AUTH_DB_SSLMODE ;
+          kv/data/microservices-planner/auth HTTP_PORT | AUTH_HTTP_PORT ;
+          kv/data/microservices-planner/auth GRPC_PORT | AUTH_GRPC_PORT
 
-      - name: Read auth secrets
-        id: auth_kv
-        uses: hashicorp/vault-action@v3
-        with:
-          url: ${{ secrets.VAULT_ADDR }}
-          token: ${{ env.VAULT_TOKEN }}
-          secrets: |
-            kv/microservices-planner/auth HTTP_PORT | AUTH_HTTP_PORT ;
-            kv/microservices-planner/auth GRPC_PORT | AUTH_GRPC_PORT
+    - name: Read anime-search secrets
+      id: anime_kv
+      uses: hashicorp/vault-action@v3
+      with:
+        url: ${{ secrets.VAULT_ADDR }}
+        token: ${{ env.VAULT_TOKEN }}
+        secrets: |
+          kv/data/microservices-planner/anime-search DB_HOST | ANIME_DB_HOST ;
+          kv/data/microservices-planner/anime-search DB_PORT | ANIME_DB_PORT ;
+          kv/data/microservices-planner/anime-search DB_USER | ANIME_DB_USER ;
+          kv/data/microservices-planner/anime-search DB_PASSWORD | ANIME_DB_PASSWORD ;
+          kv/data/microservices-planner/anime-search DB_NAME | ANIME_DB_NAME ;
+          kv/data/microservices-planner/anime-search DB_SSLMODE | ANIME_DB_SSLMODE ;
+          kv/data/microservices-planner/anime-search HTTP_PORT | ANIME_HTTP_PORT ;
+          kv/data/microservices-planner/anime-search GRPC_PORT | ANIME_GRPC_PORT ;
+          kv/data/microservices-planner/anime-search API_KEY | ANIME_API_KEY
 
-      - name: Read anime-search secrets
-        id: anime_kv
-        uses: hashicorp/vault-action@v3
-        with:
-          url: ${{ secrets.VAULT_ADDR }}
-          token: ${{ env.VAULT_TOKEN }}
-          secrets: |
-            kv/microservices-planner/anime-search GRPC_PORT | ANIME_GRPC_PORT ;
-            kv/microservices-planner/anime-search API_KEY | ANIME_API_KEY
+    - name: Upload compose
+      uses: appleboy/scp-action@v0.1.7
+      with:
+        host: ${{ secrets.VPS_HOST }}
+        username: ${{ secrets.VPS_USER }}
+        key: ${{ secrets.VPS_SSH_KEY }}
+        port: ${{ secrets.VPS_PORT }}
+        source: docker-compose.prod.yml
+        target: ${{ env.VPS_DIR }}
+        strip_components: 0
 
-      - name: Upload compose
-        uses: appleboy/scp-action@v0.1.7
-        with:
-          host: ${{ secrets.VPS_HOST }}
-          username: ${{ secrets.VPS_USER }}
-          key: ${{ secrets.VPS_SSH_KEY }}
-          port: ${{ secrets.VPS_PORT }}
-          source: docker-compose.prod.yml
-          target: ${{ env.VPS_DIR }}
-          strip_components: 0
+    - name: Write env and deploy
+      uses: appleboy/ssh-action@v1.0.3
+      with:
+        host: ${{ secrets.VPS_HOST }}
+        username: ${{ secrets.VPS_USER }}
+        key: ${{ secrets.VPS_SSH_KEY }}
+        port: ${{ secrets.VPS_PORT }}
+        envs: GHCR_USER,GHCR_PAT
+        script_stop: true
+        script: |
+          set -euo pipefail
+          if [ -z "${VPS_DIR:-}" ]; then
+            echo "VPS_DIR is empty. Set secret VPS_ROOT_DIR, e.g. /opt/microservices-planner" >&2
+            exit 1
+          fi
+          mkdir -p "$VPS_DIR/env"
+          cd "$VPS_DIR"
 
-      - name: Write env and deploy
-        uses: appleboy/ssh-action@v1.0.3
-        with:
-          host: ${{ secrets.VPS_HOST }}
-          username: ${{ secrets.VPS_USER }}
-          key: ${{ secrets.VPS_SSH_KEY }}
-          port: ${{ secrets.VPS_PORT }}
-          envs: GHCR_USER,GHCR_PAT
-          script_stop: true
-          script: |
-            set -euo pipefail
-            mkdir -p "$VPS_DIR/env"
-            cd "$VPS_DIR"
+          cat > env/users.env <<'EOF'
+          DB_HOST=${{ steps.users_kv.outputs.USERS_DB_HOST }}
+          DB_PORT=${{ steps.users_kv.outputs.USERS_DB_PORT }}
+          DB_USER=${{ steps.users_kv.outputs.USERS_DB_USER }}
+          DB_PASSWORD=${{ steps.users_kv.outputs.USERS_DB_PASSWORD }}
+          DB_NAME=${{ steps.users_kv.outputs.USERS_DB_NAME }}
+          DB_SSLMODE=${{ steps.users_kv.outputs.USERS_DB_SSLMODE }}
+          HTTP_PORT=${{ steps.users_kv.outputs.USERS_HTTP_PORT }}
+          GRPC_PORT=${{ steps.users_kv.outputs.USERS_GRPC_PORT }}
+          EOF
 
-            cat > env/users.env <<'EOF'
-            DB_HOST=${{ steps.users_kv.outputs.USERS_DB_HOST }}
-            DB_PORT=${{ steps.users_kv.outputs.USERS_DB_PORT }}
-            DB_USER=${{ steps.users_kv.outputs.USERS_DB_USER }}
-            DB_PASSWORD=${{ steps.users_kv.outputs.USERS_DB_PASSWORD }}
-            DB_NAME=${{ steps.users_kv.outputs.USERS_DB_NAME }}
-            DB_SSLMODE=${{ steps.users_kv.outputs.USERS_DB_SSLMODE }}
-            HTTP_PORT=${{ steps.users_kv.outputs.USERS_HTTP_PORT }}
-            GRPC_PORT=${{ steps.users_kv.outputs.USERS_GRPC_PORT }}
-            EOF
+          cat > env/auth.env <<'EOF'
+          DB_HOST=${{ steps.auth_kv.outputs.AUTH_DB_HOST }}
+          DB_PORT=${{ steps.auth_kv.outputs.AUTH_DB_PORT }}
+          DB_USER=${{ steps.auth_kv.outputs.AUTH_DB_USER }}
+          DB_PASSWORD=${{ steps.auth_kv.outputs.AUTH_DB_PASSWORD }}
+          DB_NAME=${{ steps.auth_kv.outputs.AUTH_DB_NAME }}
+          DB_SSLMODE=${{ steps.auth_kv.outputs.AUTH_DB_SSLMODE }}
+          HTTP_PORT=${{ steps.auth_kv.outputs.AUTH_HTTP_PORT }}
+          GRPC_PORT=${{ steps.auth_kv.outputs.AUTH_GRPC_PORT }}
+          EOF
 
-            cat > env/auth.env <<'EOF'
-            DB_HOST=${{ steps.auth_kv.outputs.AUTH_DB_HOST }}
-            DB_PORT=${{ steps.auth_kv.outputs.AUTH_DB_PORT }}
-            DB_USER=${{ steps.auth_kv.outputs.AUTH_DB_USER }}
-            DB_PASSWORD=${{ steps.auth_kv.outputs.AUTH_DB_PASSWORD }}
-            DB_NAME=${{ steps.auth_kv.outputs.AUTH_DB_NAME }}
-            DB_SSLMODE=${{ steps.auth_kv.outputs.AUTH_DB_SSLMODE }}
-            HTTP_PORT=${{ steps.auth_kv.outputs.AUTH_HTTP_PORT }}
-            GRPC_PORT=${{ steps.auth_kv.outputs.AUTH_GRPC_PORT }}
-            EOF
+          cat > env/anime-search.env <<'EOF'
+          DB_HOST=${{ steps.anime_kv.outputs.ANIME_DB_HOST }}
+          DB_PORT=${{ steps.anime_kv.outputs.ANIME_DB_PORT }}
+          DB_USER=${{ steps.anime_kv.outputs.ANIME_DB_USER }}
+          DB_PASSWORD=${{ steps.anime_kv.outputs.ANIME_DB_PASSWORD }}
+          DB_NAME=${{ steps.anime_kv.outputs.ANIME_DB_NAME }}
+          DB_SSLMODE=${{ steps.anime_kv.outputs.ANIME_DB_SSLMODE }}
+          HTTP_PORT=${{ steps.anime_kv.outputs.ANIME_HTTP_PORT }}
+          GRPC_PORT=${{ steps.anime_kv.outputs.ANIME_GRPC_PORT }}
+          API_KEY=${{ steps.anime_kv.outputs.ANIME_API_KEY }}
+          EOF
 
-            cat > env/anime-search.env <<'EOF'
-            DB_HOST=${{ steps.anime_kv.outputs.ANIME_DB_HOST }}
-            DB_PORT=${{ steps.anime_kv.outputs.ANIME_DB_PORT }}
-            DB_USER=${{ steps.anime_kv.outputs.ANIME_DB_USER }}
-            DB_PASSWORD=${{ steps.anime_kv.outputs.ANIME_DB_PASSWORD }}
-            DB_NAME=${{ steps.anime_kv.outputs.ANIME_DB_NAME }}
-            DB_SSLMODE=${{ steps.anime_kv.outputs.ANIME_DB_SSLMODE }}
-            HTTP_PORT=${{ steps.anime_kv.outputs.ANIME_HTTP_PORT }}
-            GRPC_PORT=${{ steps.anime_kv.outputs.ANIME_GRPC_PORT }}
-            API_KEY=${{ steps.anime_kv.outputs.ANIME_API_KEY }}
-            EOF
+          chmod 600 env/*.env
 
-            chmod 600 env/*.env
+          if [ -n "${GHCR_USER:-}" ] && [ -n "${GHCR_PAT:-}" ]; then
+            echo "$GHCR_PAT" | docker login ghcr.io -u "$GHCR_USER" --password-stdin
+          fi
 
-            if [ -n "${GHCR_USER:-}" ] && [ -n "${GHCR_PAT:-}" ]; then
-              echo "$GHCR_PAT" | docker login ghcr.io -u "$GHCR_USER" --password-stdin
-            fi
-
-            docker compose -f docker-compose.prod.yml pull
-            docker compose -f docker-compose.prod.yml up -d --remove-orphans
-            docker image prune -f
+          docker compose -f docker-compose.prod.yml pull
+          docker compose -f docker-compose.prod.yml up -d --remove-orphans
+          docker image prune -f
