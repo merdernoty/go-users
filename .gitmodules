@@ -1,0 +1,3 @@
+[submodule "anime-proto"]
+	path = anime-proto
+	url = git@github.com:merdernoty/anime-proto.git
