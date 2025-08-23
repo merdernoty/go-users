@@ -8,7 +8,7 @@ RUN apk add --no-cache ca-certificates tzdata git
 
 COPY go.mod ./
 
-COPY go.su[m] ./
+COPY go.sum ./
 
 RUN --mount=type=cache,target=/go/pkg/mod \
     if [ ! -f go.sum ]; then \
