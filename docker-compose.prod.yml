@@ -1,0 +1,54 @@
+name: microservices-planner
+
+services:
+  users:
+    image: ghcr.io/${OWNER}/users:latest
+    pull_policy: always
+    restart: unless-stopped
+    env_file:
+      - ./env/users.env
+    ports:
+      - "8081:8081"
+    networks:
+      - app
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  auth:
+    image: ghcr.io/${OWNER}/auth:latest
+    pull_policy: always
+    restart: unless-stopped
+    env_file:
+      - ./env/auth.env
+    ports:
+      - "8082:8081"
+    networks:
+      - app
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  anime-search:
+    image: ghcr.io/${OWNER}/anime-search:latest
+    pull_policy: always
+    restart: unless-stopped
+    env_file:
+      - ./env/anime-search.env
+    ports:
+      - "8080:8080"
+    networks:
+      - app
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+networks:
+  app:
+    name: microservices-planner_net
