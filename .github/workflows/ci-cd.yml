@@ -11,7 +11,7 @@ on:
 permissions:
   contents: read
   packages: write
-  id-token: write 
+  id-token: write
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -26,33 +26,8 @@ env:
   GOARCH: amd64
 
 jobs:
-  # test:
-  #   name: Unit tests (${{ matrix.service.name }})
-  #   runs-on: ubuntu-latest
-  #   strategy:
-  #     fail-fast: false
-  #     matrix:
-  #       service:
-  #         - { name: "users",        path: "users" }
-  #         - { name: "auth",         path: "auth" }
-  #         - { name: "anime-search", path: "anime-search" }
-  #   defaults:
-  #     run:
-  #       working-directory: ${{ matrix.service.path }}
-  #   steps:
-  #     - uses: actions/checkout@v4
-  #     - uses: actions/setup-go@v5
-  #       with:
-  #         go-version: ${{ env.GO_VERSION }}
-  #         cache: true
-  #         cache-dependency-path: ${{ matrix.service.path }}/go.sum
-  #     - run: go mod download
-  #     - run: go vet ./...
-  #     - run: go test ./... -race -count=1 -timeout=5m
-
   docker:
     name: Build & Push (${{ matrix.service.name }})
-    needs: [ test ]
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
@@ -138,7 +113,8 @@ jobs:
     runs-on: ubuntu-latest
     env:
       VPS_DIR: ${{ secrets.VPS_ROOT_DIR }}
-
+      GHCR_USER: ${{ secrets.GHCR_USER }}
+      GHCR_PAT: ${{ secrets.GHCR_PAT }}
     steps:
       - uses: actions/checkout@v4
 
@@ -221,6 +197,7 @@ jobs:
           username: ${{ secrets.VPS_USER }}
           key: ${{ secrets.VPS_SSH_KEY }}
           port: ${{ secrets.VPS_PORT }}
+          envs: GHCR_USER,GHCR_PAT
           script_stop: true
           script: |
             set -euo pipefail
@@ -263,12 +240,9 @@ jobs:
 
             chmod 600 env/*.env
 
-            # GHCR login для приватных образов (если заданы секреты)
             if [ -n "${GHCR_USER:-}" ] && [ -n "${GHCR_PAT:-}" ]; then
               echo "$GHCR_PAT" | docker login ghcr.io -u "$GHCR_USER" --password-stdin
             fi
-
-            export OWNER="${OWNER:-${{ github.repository_owner }}}"
 
             docker compose -f docker-compose.prod.yml pull
             docker compose -f docker-compose.prod.yml up -d --remove-orphans
