@@ -1,6 +1,22 @@
 name: microservices-planner
 
 services:
+  users-db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    env_file:
+      - ./env/users-db.env 
+    volumes:
+      - ./data/users-db:/var/lib/postgresql/data
+    networks:
+      - app
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"]
+      interval: 10s
+      timeout: 5s
+      retries: 6
+    ports:
+      - "15432:5432"
   users:
     image: ghcr.io/${OWNER}/users:latest
     pull_policy: always

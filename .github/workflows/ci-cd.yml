@@ -239,6 +239,12 @@ jobs:
           API_KEY=${{ steps.anime_kv.outputs.ANIME_API_KEY }}
           EOF
 
+          cat > env/users-db.env <<'EOF'
+          POSTGRES_DB=${{ steps.users_kv.outputs.USERS_DB_NAME }}
+          POSTGRES_USER=${{ steps.users_kv.outputs.USERS_DB_USER }}
+          POSTGRES_PASSWORD=${{ steps.users_kv.outputs.USERS_DB_PASSWORD }}
+          EOF
+
           chmod 600 env/*.env
 
           if [ -n "${GHCR_USER:-}" ] && [ -n "${GHCR_PAT:-}" ]; then
