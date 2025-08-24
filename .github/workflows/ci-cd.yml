@@ -193,7 +193,7 @@ jobs:
         username: ${{ secrets.VPS_USER }}
         key: ${{ secrets.VPS_SSH_KEY }}
         port: ${{ secrets.VPS_PORT }}
-        envs: GHCR_USER,GHCR_PAT,VPS_DIR,OWNER
+        envs: OWNER,VPS_DIR,GHCR_USER,GHCR_PAT
         script_stop: true
         script: |
           set -euo pipefail
