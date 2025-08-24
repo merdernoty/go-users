@@ -9,11 +9,8 @@ async function bootstrap() {
 
 const main = async () => {
 	const isClusterMode = process.env.CLUSTER_MODE === 'true'
-	if (isClusterMode) {
-		clusterModeBootstrap(bootstrap)
-	} else {
-		bootstrap()
-	}
+
+	isClusterMode ? clusterModeBootstrap(bootstrap) : bootstrap()
 }
 
 main()
