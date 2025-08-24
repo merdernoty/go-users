@@ -18,15 +18,18 @@
 		"test:cov": "jest --coverage",
 		"test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
 		"test:e2e": "jest --config ./test/jest-e2e.json",
-		"proto:gen": "mkdir -p src/generated && npx protoc       --plugin=protoc-gen-ts_proto=./node_modules/.bin/protoc-gen-ts_proto       --ts_proto_out=src/generated       --ts_proto_opt=esModuleInterop=true,forceLong=long,useDate=true,outputServices=none       -I ../anime-proto       $(find ../anime-proto -name '*.proto')"
+		"proto:gen": "mkdir -p src/generated && npx protoc       --plugin=protoc-gen-ts_proto=./node_modules/.bin/protoc-gen-ts_proto       --ts_proto_out=src/generated       --ts_proto_opt=esModuleInterop=true,forceLong=long,useDate=true       -I ../anime-proto       $(find ../anime-proto -name '*.proto')"
 	},
 	"dependencies": {
 		"@grpc/grpc-js": "^1.13.4",
 		"@grpc/proto-loader": "^0.8.0",
 		"@nestjs/common": "^11.0.1",
+		"@nestjs/config": "^4.0.2",
 		"@nestjs/core": "^11.0.1",
 		"@nestjs/microservices": "^11.1.6",
 		"@nestjs/platform-express": "^11.0.1",
+		"class-transformer": "^0.5.1",
+		"class-validator": "^0.14.2",
 		"grpc-tools": "^1.13.0",
 		"protoc": "^32.0.0",
 		"reflect-metadata": "^0.2.2",
