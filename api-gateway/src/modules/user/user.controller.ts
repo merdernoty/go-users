@@ -1,28 +1,35 @@
-import { ServiceDiscovery } from '@/service-discovery'
 import { Controller, Get, Param, ParseIntPipe } from '@nestjs/common'
 import { GetUserResponse, UserService } from '@grpc-types/user/user'
+import { ServiceDiscoveryClient } from '@/service-discovery/client'
 
 @Controller('user')
 export class UserController {
-	constructor(private serviceDiscovery: ServiceDiscovery) {}
+	constructor(private serviceDiscoveryClient: ServiceDiscoveryClient) {}
 
-	private get userService(): UserService {
-		const client = this.serviceDiscovery.getClient('USER_CLIENT')
-		return client.getService<UserService>('UserService')
+	private async userService(): Promise<UserService> {
+		const result = await this.serviceDiscoveryClient.getClient('USER_CLIENT')
+		if (!result.isSuccess || !result.client) {
+			throw new Error('Anime service is unavailable')
+		}
+
+		return result.client.getService<UserService>('UserService')
 	}
 
 	@Get(':id')
 	public async getOne(@Param('id', ParseIntPipe) id: Long): Promise<GetUserResponse> {
-		return this.userService.GetUser({ id })
+		const userService = await this.userService()
+		return userService.GetUser({ id })
 	}
 
 	@Get(':email')
-	public getUserByEmail() {
-		return this.userService.GetUserByEmail({ email: '' })
+	public async getUserByEmail() {
+		const userService = await this.userService()
+		return userService.GetUserByEmail({ email: '' })
 	}
 
 	@Get()
-	public getAll() {
-		return this.userService.ListUsers({})
+	public async getAll() {
+		const userService = await this.userService()
+		return userService.ListUsers({})
 	}
 }

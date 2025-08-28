@@ -1,32 +1,40 @@
 import { AnimeService } from '@/generated/anime/anime-search'
 import { ServiceDiscovery } from '@/service-discovery'
+import { ServiceDiscoveryClient } from '@/service-discovery/client'
 import { Controller, Get, Param, ParseIntPipe, Query, UsePipes, ValidationPipe } from '@nestjs/common'
 
 @UsePipes(new ValidationPipe({ whitelist: true }))
 @Controller('anime')
 export class AnimeController {
-	constructor(private serviceDiscovery: ServiceDiscovery) {}
+	constructor(private serviceDiscoveryClient: ServiceDiscoveryClient ) {}
 
-	private get animeService() {
-		const client = this.serviceDiscovery.getClient('ANIME_CLIENT')
-		return client.getService<AnimeService>('AnimeService')
+	private async animeService() {
+		const result = await this.serviceDiscoveryClient.getClient('ANIME_CLIENT')
+		if(!result.isSuccess || !result.client) {
+			throw new Error('Anime service is unavailable')
+		}
+
+		return result.client.getService<AnimeService>('AnimeService')
 	}
 
 	@Get(':id')
 	public async getOne(@Param('id', ParseIntPipe) id: number) {
-		const response = await this.animeService.GetAnimeById({ id })
+		const animeService = await this.animeService()
+		const response = await animeService.GetAnimeById({ id })
 		return response
 	}
 
 	@Get()
 	public async getList() {
-		const response = await this.animeService.ListAnime({})
+		const animeService = await this.animeService()
+		const response = await animeService.ListAnime({})
 		return response
 	}
 
 	@Get('search')
 	public async search(@Query('query') query: string) {
-		const response = await this.animeService.SearchAnime({ query })
+		const animeService = await this.animeService()
+		const response = await animeService.SearchAnime({ query })
 		return response
 	}
 }
