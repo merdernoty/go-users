@@ -1,7 +1,7 @@
 import { NestFactory } from '@nestjs/core'
 import { AppModule } from './app.module'
 import { clusterModeBootstrap } from './cluster'
-import { ServiceDiscoveryModule } from './service-discovery'
+import { ServiceDiscoveryModule } from './service-discovery/module'
 
 async function bootstrap() {
 	const app = await NestFactory.create(AppModule)

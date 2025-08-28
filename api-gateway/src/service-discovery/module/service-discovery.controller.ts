@@ -40,7 +40,6 @@ export class ServiceDiscoveryController {
 			console.log(`Health check for service ${name}:`, JSON.stringify(result, null, 2))
 		}
 
-
-        this.serviceDiscovery.healthCheck(newInfo)
+		this.serviceDiscovery.healthCheck(newInfo)
 	}
 }

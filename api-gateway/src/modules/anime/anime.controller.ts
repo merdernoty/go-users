@@ -1,5 +1,4 @@
 import { AnimeService } from '@/generated/anime/anime-search'
-import { ServiceDiscovery } from '@/service-discovery'
 import { ServiceDiscoveryClient } from '@/service-discovery/client'
 import { Controller, Get, Param, ParseIntPipe, Query, UsePipes, ValidationPipe } from '@nestjs/common'
 
