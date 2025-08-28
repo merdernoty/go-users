@@ -1,4 +1,4 @@
-import { Controller, Get, Post } from '@nestjs/common'
+import { Controller, Delete, Get, Post } from '@nestjs/common'
 import { ServiceDiscovery } from './service-discovery'
 import { Cron, CronExpression } from '@nestjs/schedule'
 
