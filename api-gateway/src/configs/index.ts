@@ -1,3 +1,5 @@
 export * from './anime.grpc.config'
 export * from './auth.grpc.config'
 export * from './user.grpc.config'
+export * from './env.config'
+export * from './env.service-discovery.config'
