@@ -1,10 +1,9 @@
 import { Injectable } from '@nestjs/common'
-import { ClientGrpcProxy, ClientProxyFactory, GrpcOptions } from '@nestjs/microservices'
-import { ClientNameKey, clientMap } from './clients.constant'
+import axios from 'axios'
 
 @Injectable()
 export class ServiceDiscovery {
-	private clientsInfo: Map<string, string[]> = new Map()
+	public clientsInfo: Map<string, string[]> = new Map()
 
 	constructor() {}
 
@@ -22,25 +21,35 @@ export class ServiceDiscovery {
 		return url
 	}
 
-	public getClient(name: ClientNameKey): ClientGrpcProxy {
-		//TODO: Возможно оставить ошибку тут или продумать обработку
-		const url = this.getHost(name)
-		const config = clientMap[name]
-
-		const option: GrpcOptions = {
-			...config,
-			options: {
-				...config.options,
-				url
-			}
-		}
-
-		const client = ClientProxyFactory.create(option) as ClientGrpcProxy
-		return client
+	public addClient(name: string, host: string) {
+		const clientInfo = this.clientsInfo.get(name) || []
+		clientInfo.push(host)
+		this.clientsInfo.set(name, clientInfo)
 	}
 
-	// * TODO: Продумать модель взаимодействия с ServiceDiscovery (CRON, SSE, pull/push, sub/pub)
-	private healthCheck(info: { name: string; host: string }[]) {
+	private async ping(host: string): Promise<boolean> {
+		try {
+			const response = await axios.get(`${host}/ping`)
+			return response.status === 200
+		} catch (error) {
+			return false
+		}
+	}
+
+	public async pingService(name: string) {
+		const hosts = this.clientsInfo.get(name) || []
+
+		const result: Record<string, boolean> = {}
+
+		for (const host of hosts) {
+			const isAlive = await this.ping(host)
+			result[host] = isAlive
+		}
+		return result;
+	}
+
+	// TODO: Продумать модель взаимодействия с ServiceDiscovery (CRON, SSE, pull/push, sub/pub)
+	public healthCheck(info: { name: string; host: string }[]) {
 		this.clientsInfo.clear()
 		const serviceName = info.map(item => item.name)
 
